@@ -86,12 +86,16 @@ class Auction:
                 self.take_bids(seller)
                 self.add_market_price()
                 winner = self.winner(seller)
+                #if there was no bid under the average (all the same)
+                if winner == -1:
+                    continue
                 if self.param.use_default_strat:
                     self.original_bid_update(winner, seller)
                 else:
                     self.improved_bid_update(winner, seller)
                 self.update_profits(winner, seller)
-                self.update_purchase_details(winner, seller)
+                if not self.param.pure_commitment:
+                    self.update_purchase_details(winner, seller)
                 # remove the winner until the end of the round
                 if self.param.pure_commitment:
                     self.participants.remove(winner)
@@ -122,7 +126,7 @@ class Auction:
             seller = self.selleritems[seller]
 
         winner_bid = 0
-        winner = 0
+        winner = -1
 
         for buyer in self.participants:
             buyer_bid = self.buyer_bids[buyer]
@@ -146,6 +150,9 @@ class Auction:
             buyer_bid = self.buyer_bids[buyer]
             if payment_bid < buyer_bid and buyer_bid < winner_bid:
                 payment_bid = buyer_bid
+        # if there is no second highest bid
+        if payment_bid == 0:
+            return winner_bid
 
         return payment_bid
 
@@ -176,14 +183,14 @@ class Auction:
 
     # update the profits with the outcome of the current auction
     def update_profits(self, winner, seller):
-        self.seller_profits[seller] += self.payment(self, winner, seller)
+        self.seller_profits[seller] += self.payment(winner)
 
         self.buyer_profits[winner] += self.market_prices[-1] - self.seller_profits[seller]
 
         #if we use leveled commitment and buyer already has a purchase
         if not self.param.pure_commitment and self.paid_seller[winner] != -1:
             #pay the fine and get back the payment from the seller
-            self.seller_profits[self.paid_seller[winner]] += self.fine * self.starting_prices[seller] - self.buyer_payment[winner]
+            self.seller_profits[self.paid_seller[winner]] += self.param.fine * self.starting_prices[seller] - self.buyer_payment[winner]
             self.buyer_profits -= self.buyer_commitments[winner]
 
 
@@ -209,8 +216,8 @@ class Auction:
 
     # update the winners' commitment and payment for the next auctions in the current round
     def update_purchase_details(self, winner, seller):
-        self.buyer_commitments[winner] = self.self.market_prices[-1] - self.payment(self, winner, seller) + \
-                                         self.fine * self.starting_prices[seller]
+        self.buyer_commitments[winner] = self.market_prices[-1] - self.payment(winner) + \
+                                         self.param.fine * self.starting_prices[seller]
 
         # update payment of buyer (amount and to whom)
         self.buyer_payment[winner] = self.payment(self, winner, seller)
