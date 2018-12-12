@@ -2,6 +2,7 @@ import numpy as np
 import random
 from random import shuffle
 
+
 class Input:
     # default parameter setting
     num_itemtype = 10
@@ -13,12 +14,13 @@ class Input:
     pure_commitment = True
 
     # parameters for the bidding strategy. We use the same for each buyer
-    #We use uniform distribution (1,max_bid) to initialize the starting bids
+    # We use uniform distribution (1,max_bid) to initialize the starting bids
     max_bid = 2.0
     bid_dec = 0.9
     bid_inc = 1.1
     # the chosen strategy
     use_default_strat = False
+
 
 class Auction:
 
@@ -33,20 +35,20 @@ class Auction:
             shuffle(x)
             self.rounds.append(x)
 
-        self.selleritems = []
-        #pick itemtype for each seller randomly
+        self.seller_items = []
+        # pick itemtype for each seller randomly
         for _ in range(self.param.num_seller):
-            self.selleritems.append(random.randint(0,self.param.num_itemtype-1))
+            self.seller_items.append(random.randint(0, self.param.num_itemtype - 1))
 
-        #the list of market prices for each auction
+        # the list of market prices for each auction
         self.market_prices = []
 
         self.starting_prices = []
-        #set the starting prize for each seller according to uniform(0,s_max)
+        # set the starting prize for each seller according to uniform(0,s_max)
         for _ in range(self.param.num_seller):
             self.starting_prices.append(random.uniform(0, self.param.s_max))
 
-        #initialize array of bidding factors for each buyer with the same starting value
+        # initialize array of bidding factors for each buyer with the same starting value
         # In case of the original strategy buyers have bidding factors for each seller.
         # Otherwise bidding factors are determined by the type of the item
         if self.param.use_default_strat:
@@ -59,7 +61,7 @@ class Auction:
         self.seller_profits = np.zeros(self.param.num_seller, dtype=float)
         self.buyer_profits = np.zeros(self.param.num_buyer, dtype=float)
 
-        #the bids of buyers are stored in every auction
+        # the bids of buyers are stored in every auction
         self.buyer_bids = np.zeros(self.param.num_buyer, dtype=float)
 
         # the amount added to the base price computed from the previous purchase (in the same round) is stored
@@ -74,19 +76,20 @@ class Auction:
             # -1 means no payment yet
             self.paid_seller.fill(-1)
 
-        #in pure commitment after a buyer purchased an item she/he wont participate in auctions until the end of the round
-        #we use a list to maintain the remaining participants
-        #in case of leveled commitment we do not remove any of the buyers from this list
+        # In pure commitment after a buyer purchased an item she/he wont participate
+        # in auctions until the end of the round.
+        # We use a list to maintain the remaining participants
+        # in case of leveled commitment we do not remove any of the buyers from this list
         self.participants = [i for i in range(self.param.num_buyer)]
 
-    #run the auctions
+    # run the auctions
     def run(self):
         for auctions in self.rounds:
             for seller in auctions:
                 self.take_bids(seller)
                 self.add_market_price()
                 winner = self.winner(seller)
-                #if there was no bid under the average (all the same)
+                # if there was no bid under the average (all the same)
                 if winner == -1:
                     continue
                 self.update_bids(winner, seller)
@@ -96,31 +99,30 @@ class Auction:
                 # remove the winner until the end of the round
                 if self.param.pure_commitment:
                     self.participants.remove(winner)
-            #initialize for the next round
+            # initialize for the next round
             self.init_round()
 
-        return (self.market_prices, self.buyer_profits, self.seller_profits)
+        return self.market_prices, self.buyer_profits, self.seller_profits
 
-
-    #compute the market price by averaging over bids in the current auction
+    # compute the market price by averaging over bids in the current auction
     def add_market_price(self):
         result = 0.0
 
-        #average over the buyers
+        # average over the buyers
         for buyer in self.participants:
             result += self.buyer_bids[buyer]
         result /= len(self.participants)
         self.market_prices.append(result)
 
-    #determine the winner in seller's auction
+    # determine the winner in seller's auction
     def winner(self, seller):
-        #get the current market price
+        # get the current market price
         market_price = self.market_prices[-1]
 
         # in case of we do not use the original strategy we have bid_factors per item type
         # choose the item belonging to the seller
         if not self.param.use_default_strat:
-            seller = self.selleritems[seller]
+            seller = self.seller_items[seller]
 
         winner_bid = 0
         winner = -1
@@ -129,23 +131,23 @@ class Auction:
             buyer_bid = self.buyer_bids[buyer]
             # the winner is under the market price with the biggest bid
             # if there are more such buyers (with the same bid) we choose the first
-            if winner_bid < buyer_bid and buyer_bid < market_price:
+            if winner_bid < buyer_bid < market_price:
                 winner_bid = buyer_bid
                 winner = buyer
 
         return winner
 
-    #determine the amount that the winner have to pay in seller's auction
+    # determine the amount that the winner have to pay in seller's auction
     def payment(self, winner):
         payment_bid = 0
 
-        #the bid that the winner took
+        # the bid that the winner took
         winner_bid = self.buyer_bids[winner]
 
-        #we search for the biggest bid that is under the bid of winner
+        # we search for the biggest bid that is under the bid of winner
         for buyer in self.participants:
             buyer_bid = self.buyer_bids[buyer]
-            if payment_bid < buyer_bid and buyer_bid < winner_bid:
+            if payment_bid < buyer_bid < winner_bid:
                 payment_bid = buyer_bid
         # if there is no second highest bid
         if payment_bid == 0:
@@ -154,16 +156,17 @@ class Auction:
         return payment_bid
 
     # default strat:
-    # increase the bid factor in case of lose otherwise decrease. This is the bidding strategy given in the specification
+    # increase the bid factor in case of lose otherwise decrease.
+    # This is the bidding strategy given in the specification
     # improved strat:
     # buyers take into account the item type and the winner does not change his bid
     def update_bids(self, winner, seller):
         # in case of we do not use the original strategy we have bid_factors per item type
         # choose the item belonging to the seller
         if not self.param.use_default_strat:
-            seller = self.selleritems[seller]
+            seller = self.seller_items[seller]
         for buyer in self.participants:
-            #decrease if we won, increase if we lost
+            # decrease if we won, increase if we lost
             if buyer == winner and self.param.use_default_strat:
                 self.bid_factors[buyer][seller] *= self.param.bid_dec
             else:
@@ -179,23 +182,23 @@ class Auction:
 
         self.buyer_profits[winner] += self.market_prices[-1] - payment
 
-        #if we use leveled commitment and buyer already has a purchase
+        # if we use leveled commitment and buyer already has a purchase
         if not self.param.pure_commitment and self.paid_seller[winner] != -1:
-            #pay the fine and get back the payment from the seller
-            self.seller_profits[self.paid_seller[winner]] += self.param.fine * self.starting_prices[seller] - self.buyer_payment[winner]
+            # pay the fine and get back the payment from the seller
+            self.seller_profits[self.paid_seller[winner]] += self.param.fine * self.starting_prices[seller] - \
+                                                             self.buyer_payment[winner]
             self.buyer_profits[winner] -= self.buyer_commitments[winner]
 
-
-    #every buyer takes their own bid
+    # every buyer takes their own bid
     def take_bids(self, seller):
-        #the starting price is always determined by the seller not the item type
+        # the starting price is always determined by the seller not the item type
         starting_price = self.starting_prices[seller]
         # in case of we do not use the original strategy we have bid_factors per item type
         # choose the item belonging to the seller
         if not self.param.use_default_strat:
-            seller = self.selleritems[seller]
+            seller = self.seller_items[seller]
 
-        #update each of
+        # update each of
         for buyer in self.participants:
             self.buyer_bids[buyer] = self.bid_factors[buyer][seller] * starting_price
 
