@@ -10,7 +10,7 @@ class Input:
     num_round = 10
     s_max = 1
     fine = 0.1
-    pure_commitment = False
+    pure_commitment = True
 
     # parameters for the bidding strategy. We use the same for each buyer
     #We use uniform distribution (1,max_bid) to initialize the starting bids
@@ -36,7 +36,7 @@ class Auction:
         self.selleritems = []
         #pick itemtype for each seller randomly
         for _ in range(self.param.num_seller):
-            self.selleritems.append(random.randint(0,self.param.num_itemtype))
+            self.selleritems.append(random.randint(0,self.param.num_itemtype-1))
 
         #the list of market prices for each auction
         self.market_prices = []
@@ -56,21 +56,21 @@ class Auction:
 
         self.bid_factors = np.random.rand(self.param.num_buyer, self.num_bid_factors) * (self.param.max_bid - 1.0) + 1.0
 
-        self.seller_profits = np.zeros(shape=(self.param.num_seller,1), dtype=float)
-        self.buyer_profits = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
+        self.seller_profits = np.zeros(self.param.num_seller, dtype=float)
+        self.buyer_profits = np.zeros(self.param.num_buyer, dtype=float)
 
         #the bids of buyers are stored in every auction
-        self.buyer_bids = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
+        self.buyer_bids = np.zeros(self.param.num_buyer, dtype=float)
 
         # the amount added to the base price computed from the previous purchase (in the same round) is stored
         # here we store the additional bid that will be added to the base price
         if not self.param.pure_commitment:
-            self.buyer_commitments = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
+            self.buyer_commitments = np.zeros(self.param.num_buyer, dtype=float)
 
             # we also store the winners' payments to subtract from the sellers' profit in case of annul
-            self.buyer_payment = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
+            self.buyer_payment = np.zeros(self.param.num_buyer, dtype=float)
             # and the seller whom the amount has been paid for each buyer
-            self.paid_seller = np.empty(shape=(self.param.num_buyer, 1), dtype=int)
+            self.paid_seller = np.empty(self.param.num_buyer, dtype=int)
             # -1 means no payment yet
             self.paid_seller.fill(-1)
 
@@ -89,10 +89,7 @@ class Auction:
                 #if there was no bid under the average (all the same)
                 if winner == -1:
                     continue
-                if self.param.use_default_strat:
-                    self.original_bid_update(winner, seller)
-                else:
-                    self.improved_bid_update(winner, seller)
+                self.update_bids(winner, seller)
                 self.update_profits(winner, seller)
                 if not self.param.pure_commitment:
                     self.update_purchase_details(winner, seller)
@@ -156,42 +153,37 @@ class Auction:
 
         return payment_bid
 
-
+    # default strat:
     # increase the bid factor in case of lose otherwise decrease. This is the bidding strategy given in the specification
-    def original_bid_update(self, winner, seller):
+    # improved strat:
+    # buyers take into account the item type and the winner does not change his bid
+    def update_bids(self, winner, seller):
+        # in case of we do not use the original strategy we have bid_factors per item type
+        # choose the item belonging to the seller
+        if not self.param.use_default_strat:
+            seller = self.selleritems[seller]
         for buyer in self.participants:
             #decrease if we won, increase if we lost
-            if buyer == winner:
+            if buyer == winner and self.param.use_default_strat:
                 self.bid_factors[buyer][seller] *= self.param.bid_dec
             else:
                 self.bid_factors[buyer][seller] *= self.param.bid_inc
 
     # Here we decrease the bid factor if our bid was greater than or equal to the winners' bid. Otherwise we increase
     # Additionally the bid factors are determined by the item types rather than the sellers as in the original update
-    def improved_bid_update(self, winner, seller):
-
-        seller = self.selleritems[seller]
-
-        # the bid that the winner took
-        winner_bid = self.buyer_bids[winner]
-        for buyer in self.participants:
-            buyer_bid = self.buyer_bids[buyer]
-            if buyer_bid >= winner_bid:
-                self.bid_factors[buyer][seller] *= self.param.bid_dec
-            else:
-                self.bid_factors[buyer][seller] *= self.param.bid_inc
 
     # update the profits with the outcome of the current auction
     def update_profits(self, winner, seller):
-        self.seller_profits[seller] += self.payment(winner)
+        payment = self.payment(winner)
+        self.seller_profits[seller] += payment
 
-        self.buyer_profits[winner] += self.market_prices[-1] - self.seller_profits[seller]
+        self.buyer_profits[winner] += self.market_prices[-1] - payment
 
         #if we use leveled commitment and buyer already has a purchase
         if not self.param.pure_commitment and self.paid_seller[winner] != -1:
             #pay the fine and get back the payment from the seller
             self.seller_profits[self.paid_seller[winner]] += self.param.fine * self.starting_prices[seller] - self.buyer_payment[winner]
-            self.buyer_profits -= self.buyer_commitments[winner]
+            self.buyer_profits[winner] -= self.buyer_commitments[winner]
 
 
     #every buyer takes their own bid
@@ -227,7 +219,7 @@ class Auction:
         if self.param.pure_commitment:
             self.participants = [i for i in range(self.param.num_buyer)]
         else:
-            self.buyer_commitments = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
-            self.buyer_payment = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
-            self.paid_seller = np.empty(shape=(self.param.num_buyer, 1), dtype=int)
+            self.buyer_commitments = np.zeros(self.param.num_buyer, dtype=float)
+            self.buyer_payment = np.zeros(self.param.num_buyer, dtype=float)
+            self.paid_seller = np.empty(self.param.num_buyer, dtype=int)
             self.paid_seller.fill(-1)
