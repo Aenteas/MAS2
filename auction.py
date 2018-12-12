@@ -10,14 +10,15 @@ class Input:
     num_round = 10
     s_max = 1
     fine = 0.1
-    pure_commitment = True
+    pure_commitment = False
 
     # parameters for the bidding strategy. We use the same for each buyer
-    bid_start = 1
+    #We use uniform distribution (1,max_bid) to initialize the starting bids
+    max_bid = 2.0
     bid_dec = 0.9
     bid_inc = 1.1
     # the chosen strategy
-    use_default_strat = True
+    use_default_strat = False
 
 class Auction:
 
@@ -53,8 +54,7 @@ class Auction:
         else:
             self.num_bid_factors = self.param.num_itemtype
 
-        self.bid_factors = np.empty(shape=(self.param.num_buyer, self.num_bid_factors), dtype=float)
-        self.bid_factors.fill(self.param.bid_start)
+        self.bid_factors = np.random.rand(self.param.num_buyer, self.num_bid_factors) * (self.param.max_bid - 1.0) + 1.0
 
         self.seller_profits = np.zeros(shape=(self.param.num_seller,1), dtype=float)
         self.buyer_profits = np.zeros(shape=(self.param.num_buyer, 1), dtype=float)
@@ -220,7 +220,7 @@ class Auction:
                                          self.param.fine * self.starting_prices[seller]
 
         # update payment of buyer (amount and to whom)
-        self.buyer_payment[winner] = self.payment(self, winner, seller)
+        self.buyer_payment[winner] = self.payment(winner)
         self.paid_seller[winner] = seller
 
     def init_round(self):
