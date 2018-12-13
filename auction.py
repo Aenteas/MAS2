@@ -88,8 +88,8 @@ class Auction:
             for seller in auctions:
                 self.take_bids(seller)
                 self.add_market_price()
-                winner = self.winner(seller)
-                # if there was no bid under the average (all the same)
+                winner = self.winner()
+                #if there was no bid under the average (all the same)
                 if winner == -1:
                     continue
                 self.update_bids(winner, seller)
@@ -114,15 +114,10 @@ class Auction:
         result /= len(self.participants)
         self.market_prices.append(result)
 
-    # determine the winner in seller's auction
-    def winner(self, seller):
-        # get the current market price
+    #determine the winner in seller's auction
+    def winner(self):
+        #get the current market price
         market_price = self.market_prices[-1]
-
-        # in case of we do not use the original strategy we have bid_factors per item type
-        # choose the item belonging to the seller
-        if not self.param.use_default_strat:
-            seller = self.seller_items[seller]
 
         winner_bid = 0
         winner = -1
