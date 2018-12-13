@@ -40,6 +40,8 @@ class Auction:
 
         #the list of market prices for each auction
         self.market_prices = []
+        #this will be the sorted (with the rounds' frequency) array of market prices
+        self.market_prices_sorted = np.empty(self.param.num_round * self.param.num_seller, dtype=float)
 
         self.starting_prices = []
         #set the starting prize for each seller according to uniform(0,s_max)
@@ -98,8 +100,9 @@ class Auction:
                     self.participants.remove(winner)
             #initialize for the next round
             self.init_round()
+        self.reorder_market_prices()
 
-        return (self.market_prices, self.buyer_profits, self.seller_profits)
+        return (self.market_prices_sorted, self.buyer_profits, self.seller_profits)
 
 
     #compute the market price by averaging over bids in the current auction
@@ -209,6 +212,15 @@ class Auction:
         # update payment of buyer (amount and to whom)
         self.buyer_payment[winner] = self.payment(winner)
         self.paid_seller[winner] = seller
+
+    def reorder_market_prices(self):
+        offset = 0
+        for auctions in self.rounds:
+            for i, seller in enumerate(auctions):
+                index = offset + i
+                to = offset + seller
+                self.market_prices_sorted[to] = self.market_prices[index]
+            offset += self.param.num_seller
 
     def init_round(self):
         if self.param.pure_commitment:
