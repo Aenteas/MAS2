@@ -1,7 +1,6 @@
 from auction import Input
 from auction import Auction
 import numpy as np
-
 # here test code can be placed
 
 auction_parameters = Input()
@@ -28,7 +27,10 @@ for i, round_outcome in enumerate(market_prices):
     print(f"round {i}: {round_outcome}")
 print()
 
-print(f"Buyer profits: \n{buyer_profits}\n"
-      f"AVG Buyer profits per round: \n{(sum(buyer_profits) / float(len(buyer_profits))) / auction_parameters.num_round}\n"
+avg_buyer_profit_per_round = (sum(buyer_profits) / float(len(buyer_profits))) / auction_parameters.num_round
+avg_seller_profit_per_round = (sum(seller_profits) / float(len(seller_profits))) / auction_parameters.num_round
+
+print(f"Buyer profits for all {auction_parameters.num_round} rounds: \n{buyer_profits}\n"
+      f"AVG Buyer profits per round: \n{avg_buyer_profit_per_round}\n"
       f"Seller profits for all {auction_parameters.num_round} rounds: \n{seller_profits}\n"
-      f"AVG Seller profits per round: {(sum(seller_profits) / float(len(seller_profits))) / auction_parameters.num_round}\n")
+      f"AVG Seller profits per round: {avg_seller_profit_per_round}\n")

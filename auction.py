@@ -10,7 +10,7 @@ class Input:
     num_buyer = 15
     num_round = 10
     s_max = 1
-    fine = 0.1
+    fine = 0.1  # This is multiplied with the sellers starting price to determine the fine
     pure_commitment = True
 
     # parameters for the bidding strategy. We use the same for each buyer
@@ -42,7 +42,7 @@ class Auction:
 
         # the list of market prices for each auction
         self.market_prices = []
-        #this will be the sorted (with the rounds' frequency) array of market prices
+        # this will be the sorted (with the rounds' frequency) array of market prices
         self.market_prices_sorted = np.empty(self.param.num_round * self.param.num_seller, dtype=float)
 
         self.starting_prices = []
