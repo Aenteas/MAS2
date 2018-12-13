@@ -89,7 +89,7 @@ class Auction:
                 self.take_bids(seller)
                 self.add_market_price()
                 winner = self.winner()
-                #if there was no bid under the average (all the same)
+                # if there was no bid under the average (all the same)
                 if winner == -1:
                     continue
                 self.update_bids(winner, seller)
@@ -99,6 +99,7 @@ class Auction:
                 # remove the winner until the end of the round
                 if self.param.pure_commitment:
                     self.participants.remove(winner)
+
             # initialize for the next round
             self.init_round()
 
@@ -114,9 +115,9 @@ class Auction:
         result /= len(self.participants)
         self.market_prices.append(result)
 
-    #determine the winner in seller's auction
+    # determine the winner in seller's auction
     def winner(self):
-        #get the current market price
+        # get the current market price
         market_price = self.market_prices[-1]
 
         winner_bid = 0
