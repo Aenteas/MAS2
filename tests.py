@@ -1,7 +1,7 @@
 from auction import Input
 from auction import Auction
 import numpy as np
-import main
+import util
 
 """ In this part we construct lists of legal parameter values for each variable parameter to the auction model """
 min_number_sellers = 1
@@ -30,10 +30,14 @@ fine_param_list = np.arange(min_fine, max_fine, 0.1)
 # End of parameter list generation
 
 """
+FROM ASSIGNMENT TEXT:
+Experiment with values of number of item types, number of sellers, number of buyers (Note: art with small values 
+e.g. 1 and 2, and make little increments of e.g. 1), and number of rounds.
+
 For each number of sellers defined in the parameter list above, run experiments with 1-10 more buyers than sellers,
 and with a number of item types up to the amount of sellers.
 """
-buyers_sellers_rounds_results = []
+buyers_sellers_rounds_results = []  # This list will contain results of variations on buyers, sellers and rounds
 for number_of_sellers in num_sellers_param_list:
     auction_parameters = Input()
     auction_parameters.num_seller = number_of_sellers
@@ -43,39 +47,50 @@ for number_of_sellers in num_sellers_param_list:
             auction_parameters.num_itemtype = number_of_item_types
             test = Auction(auction_parameters)
             market_prices, buyer_profits, seller_profits = test.run()
-            market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = main.process_data(
-                market_prices, buyer_profits, seller_profits)
+            market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
+                market_prices, auction_parameters, buyer_profits, seller_profits)
             buyers_sellers_rounds_results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
 
 
+"""
+FROM ASSIGNMENT TEXT:
+Experiment with values of penalty factor.
+"""
 auction_parameters = Input()
-rounds_results = []
+rounds_results = []  # This list will contain results of variations on amount of rounds in an auction
 for number_of_rounds in num_rounds_param_list:
     auction_parameters.num_round = number_of_rounds
     test = Auction(auction_parameters)
     market_prices, buyer_profits, seller_profits = test.run()
-    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = main.process_data(
-        market_prices, buyer_profits, seller_profits)
+    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
+        market_prices, auction_parameters, buyer_profits, seller_profits)
     rounds_results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
 
 
+"""
+FROM ASSIGNMENT TEXT:
+Experiment with values of bidding factors.
+"""
 auction_parameters = Input()
-s_max_results = []
+s_max_results = []  # This list will contain results of variations on maximal starting price
 for s_max in s_max_param_list:
     auction_parameters.s_max = s_max
     test = Auction(auction_parameters)
     market_prices, buyer_profits, seller_profits = test.run()
-    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = main.process_data(
-        market_prices, buyer_profits, seller_profits)
+    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
+        market_prices, auction_parameters, buyer_profits, seller_profits)
     s_max_results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
 
-
+"""
+FROM
+Experiment with values of bid in-/decrease factors.
+"""
 auction_parameters = Input()
-fine_results = []
+fine_results = []  # This list will contain results of variations on annulation fees
 for fine in fine_param_list:
     auction_parameters.fine = fine
     test = Auction(auction_parameters)
     market_prices, buyer_profits, seller_profits = test.run()
-    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = main.process_data(
-        market_prices, buyer_profits, seller_profits)
+    market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
+        market_prices, auction_parameters, buyer_profits, seller_profits)
     fine_results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
