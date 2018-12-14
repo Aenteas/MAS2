@@ -45,7 +45,7 @@ for number_of_sellers in num_sellers_param_list:
             market_prices, buyer_profits, seller_profits = test.run()
             market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = main.process_data(
                 market_prices, buyer_profits, seller_profits)
-            results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
+            buyers_sellers_rounds_results.append([auction_parameters, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price])
 
 
 auction_parameters = Input()
