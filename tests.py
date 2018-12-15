@@ -88,7 +88,7 @@ for bid_inc_factor in bid_inc_factors:
 FROM ASSIGNMENT TEXT:
 Experiment with values of penalty factor.
 """
-results_annulment_fee = []  # This list will contain results of variations on annulation fees
+results_annulment_fee = []  # This list will contain results of variations on annulment fees
 for fine in fine_param_list:
     auction_parameters = Input()
     auction_parameters.fine = fine
@@ -103,7 +103,7 @@ for fine in fine_param_list:
 FROM ASSIGNMENT TEXT:
 Experiment with values of bidding factors.
 """
-results_bidding_factor = []  # This list will contain results of variations on annulation fees
+results_bidding_factor = []  # This list will contain results of variations on maximal bidding factor
 for bid_factor in bid_factor_param_list:
     auction_parameters = Input()
     auction_parameters.max_bid = bid_factor
