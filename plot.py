@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-pickling_on = open("results_leveled_commitment.pickle", "rb")
+# The file name of the opened file should be the same as the one pickled at the end of tests.py
+pickling_on = open("results.pickle", "rb")
 p = pickle.load(pickling_on)
 
 fig1 = plt.figure()
