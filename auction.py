@@ -11,7 +11,7 @@ class Input:
     num_round = 10
     s_max = 1
     fine = 0.1  # This is multiplied with the sellers starting price to determine the fine
-    pure_commitment = True
+    pure_commitment = False
 
     # parameters for the bidding strategy. We use the same for each buyer
     # We use uniform distribution (1,max_bid) to initialize the starting bids
@@ -19,7 +19,7 @@ class Input:
     bid_dec = 0.9
     bid_inc = 1.1
     # the chosen strategy
-    use_default_strat = False
+    use_default_strat = True
 
 
 class Auction:
