@@ -26,6 +26,8 @@ max_fine = 1.2
 fine_param_list = np.arange(min_fine, max_fine, 0.1)
 # End of parameter list generation
 
+iterations_per_configuration = 10
+
 """
 FROM ASSIGNMENT TEXT:
 Experiment with values of number of item types, number of sellers, number of buyers (Note: art with small values 
@@ -37,16 +39,33 @@ and with a number of item types up to the amount of sellers.
 results_buyers_sellers_items = []  # This list will contain results of variations on buyers, sellers and item types
 for number_of_sellers in num_sellers_param_list:
     for number_of_buyers in range(number_of_sellers + 1, number_of_sellers + 10):
+
         for number_of_item_types in range(min_number_itemtype, number_of_sellers):
             auction_parameters = Input()
             auction_parameters.num_seller = number_of_sellers
             auction_parameters.num_buyer = number_of_buyers
             auction_parameters.num_itemtype = number_of_item_types
-            test = Auction(auction_parameters)
-            market_prices, buyer_profits, seller_profits = test.run()
-            market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
-                market_prices, auction_parameters, buyer_profits, seller_profits)
-            results_buyers_sellers_items.append({"params":auction_parameters, "avg_buyer_profit_per_round":avg_buyer_profit_per_round, "avg_seller_profit_per_round":avg_seller_profit_per_round, "avg_market_price":avg_market_price, "market_prices":market_prices})
+            tot_buyer_profit_per_round = 0
+            tot_seller_profit_per_round = 0
+            tot_avg_market_price = 0
+            tot_market_prices = 0
+            for _ in range(0, iterations_per_configuration):
+                test = Auction(auction_parameters)
+                market_prices, buyer_profits, seller_profits = test.run()
+                market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
+                    market_prices, auction_parameters, buyer_profits, seller_profits)
+                tot_buyer_profit_per_round += avg_buyer_profit_per_round
+                tot_seller_profit_per_round += avg_seller_profit_per_round
+                tot_avg_market_price += avg_market_price
+                tot_market_prices += market_prices
+            avg_buyer_profit_per_round = tot_buyer_profit_per_round/float(iterations_per_configuration)
+            avg_seller_profit_per_round = tot_seller_profit_per_round/float(iterations_per_configuration)
+            avg_market_price = tot_avg_market_price/float(iterations_per_configuration)
+            market_prices = tot_market_prices/float(iterations_per_configuration)
+            results_buyers_sellers_items.append(
+                {"params": auction_parameters, "avg_buyer_profit_per_round": avg_buyer_profit_per_round,
+                 "avg_seller_profit_per_round": avg_seller_profit_per_round, "avg_market_price": avg_market_price,
+                 "market_prices": market_prices})
 
 
 """
