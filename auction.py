@@ -10,8 +10,8 @@ class Input:
     num_buyer = 15
     num_round = 10
     s_max = 1
-    fine = 0.1
-    pure_commitment = True
+    fine = 0.1  # This is multiplied with the sellers starting price to determine the fine
+    pure_commitment = False
 
     # parameters for the bidding strategy. We use the same for each buyer
     # We use uniform distribution (1,max_bid) to initialize the starting bids
@@ -19,7 +19,7 @@ class Input:
     bid_dec = 0.9
     bid_inc = 1.1
     # the chosen strategy
-    use_default_strat = False
+    use_default_strat = True
 
 
 class Auction:
@@ -42,7 +42,7 @@ class Auction:
 
         # the list of market prices for each auction
         self.market_prices = []
-        #this will be the sorted (with the rounds' frequency) array of market prices
+        # this will be the sorted (with the rounds' frequency) array of market prices
         self.market_prices_sorted = np.empty(self.param.num_round * self.param.num_seller, dtype=float)
 
         self.starting_prices = []
