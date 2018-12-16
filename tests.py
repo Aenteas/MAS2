@@ -26,7 +26,7 @@ max_fine = 1.2
 fine_param_list = np.arange(min_fine, max_fine, 0.1)
 # End of parameter list generation
 
-iterations_per_configuration = 10
+iterations_per_configuration = 20
 
 
 def run_experiment(auction_parameters, iterations_per_configuration):
@@ -87,7 +87,7 @@ for number_of_rounds in num_rounds_param_list:
     market_prices, buyer_profits, seller_profits = test.run()
     market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
         market_prices, auction_parameters, buyer_profits, seller_profits)
-    results_rounds.append({"params":auction_parameters, "avg_buyer_profit_per_round":avg_buyer_profit_per_round, "avg_seller_profit_per_round":avg_seller_profit_per_round, "avg_market_price":avg_market_price, "market_prices":market_prices})
+    results_rounds.append(run_experiment(auction_parameters, iterations_per_configuration))
 
 
 """
@@ -104,7 +104,7 @@ for bid_inc_factor in bid_inc_factors:
         market_prices, buyer_profits, seller_profits = test.run()
         market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
             market_prices, auction_parameters, buyer_profits, seller_profits)
-        results_bidding_inc_dec.append({"params":auction_parameters, "avg_buyer_profit_per_round":avg_buyer_profit_per_round, "avg_seller_profit_per_round":avg_seller_profit_per_round, "avg_market_price":avg_market_price, "market_prices":market_prices})
+        results_bidding_inc_dec.append(run_experiment(auction_parameters, iterations_per_configuration))
 
 
 """
@@ -119,7 +119,7 @@ for fine in fine_param_list:
     market_prices, buyer_profits, seller_profits = test.run()
     market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
         market_prices, auction_parameters, buyer_profits, seller_profits)
-    results_annulment_fee.append({"params":auction_parameters, "avg_buyer_profit_per_round":avg_buyer_profit_per_round, "avg_seller_profit_per_round":avg_seller_profit_per_round, "avg_market_price":avg_market_price, "market_prices":market_prices})
+    results_annulment_fee.append(run_experiment(auction_parameters, iterations_per_configuration))
 
 
 """
@@ -134,4 +134,4 @@ for bid_factor in bid_factor_param_list:
     market_prices, buyer_profits, seller_profits = test.run()
     market_prices, round_avgs, seller_avgs, avg_buyer_profit_per_round, avg_seller_profit_per_round, avg_market_price = util.process_data(
         market_prices, auction_parameters, buyer_profits, seller_profits)
-    results_bidding_factor.append({"params":auction_parameters, "avg_buyer_profit_per_round":avg_buyer_profit_per_round, "avg_seller_profit_per_round":avg_seller_profit_per_round, "avg_market_price":avg_market_price, "market_prices":market_prices})
+    results_bidding_factor.append(run_experiment(auction_parameters, iterations_per_configuration))
