@@ -180,7 +180,7 @@ for bid_factor in bid_factor_param_list:
         market_prices, auction_parameters, buyer_profits, seller_profits)
     results_bidding_factor.append(run_experiment(auction_parameters, iterations_per_configuration))
 
-all_results = {"buyer_sellers_result_matrices":buyer_sellers_result_matrices, "results_buyers_sellers":results_buyers_sellers, "results_item_types":results_item_types, "results_rounds":results_rounds, "results_bidding_inc_dec":results_bidding_inc_dec, "results_annulment_fee":results_annulment_fee, "results_bidding_factor":results_bidding_factor}
+all_results = {"buyer_sellers_result_matrices":buyer_sellers_result_matrices, "results_buyers_sellers":results_buyers_sellers, "results_item_types":results_item_types, "results_rounds":results_rounds, "results_bidding_inc_dec":results_bidding_inc_dec, "results_bidding_inc":results_bidding_inc, "results_bidding_dec":results_bidding_dec, "results_annulment_fee":results_annulment_fee, "results_bidding_factor":results_bidding_factor}
 pickling_on = open("results_leveled_commitment.pickle", "wb")
 pickle.dump(all_results, pickling_on)
 pickling_on.close()
